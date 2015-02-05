@@ -1,0 +1,89 @@
+<?php
+/**
+ * Implements hook_schema().
+ */
+function custom_entity_schema() {
+
+  $schema = array();
+
+  $schema['basic_entity'] = array(
+    'description' => 'The base table for the basic entity',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key of the basic entity',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'Basic entity name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      // Note that description is only here so that we can show how to render the attributes in the module
+      'description' => array(
+        'description' => 'Project description.',
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+        'default' => NULL
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['admin_entity'] = array(
+    'description' => 'The base table for the Admin entity',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key of the Admin entity',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'Admin entity name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'description' => array(
+        'description' => 'Admin entity description.',
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+        'default' => NULL
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['uber_entity'] = array(
+    'description' => 'The base table for the Uber entity',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key of the Uber entity',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'Uber entity name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'description' => array(
+        'description' => 'Uber entity description.',
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+        'default' => NULL
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}

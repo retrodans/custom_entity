@@ -1,0 +1,349 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function custom_entity_menu() {
+  // Declare a page to view the basic entity at
+  $items['basic-entity/%'] = array(
+    'title' => 'basic_entity_page',
+    'page callback' => '_basic_entity_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+
+  // Declare a page to view the admin entity at
+  $items['admin-entity/%'] = array(
+    'title' => 'admin_entity_page',
+    'page callback' => '_admin_entity_page',
+    'access arguments' => array('view admin_entity'),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+
+  // Declare a page to view the uber entity at
+  $items['uber-entity/%'] = array(
+    'title' => 'uber_entity_page',
+    'page callback' => '_uber_entity_page',
+    'access arguments' => array('view uber_entity'),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $items['admin/structure/uber-entity'] = array(
+    'title' => 'admin uber_entity_page',
+    'access arguments' => array('administer uber_entity'),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implements hook_entity_info().
+ */
+function custom_entity_entity_info() {
+
+  $info = array();
+
+  // Configure the basic entity
+  $info['basic_entity'] = array(
+    'label' => t('Basic Entity'),
+    'base table' => 'basic_entity',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'name', // Drupal will auto-render the label now
+    ),
+    'entity class' => 'Entity',
+    'controller class' => 'BasicEntityController',
+    'module' => 'custom_entity',
+  );
+
+  // Configure the admin entity
+  $info['admin_entity'] = array(
+    // label for entity
+    'label' => t('Admin Entity'),
+
+    // Table name (as per .install)
+    'base table' => 'admin_entity',
+
+    // Setup the keys
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'name', // Drupal will auto-render the label now
+    ),
+
+    // Some controllers
+    'entity class' => 'AdminEntity',
+    'controller class' => 'AdminEntityController',
+
+    // The current modules name
+    'module' => 'custom_entity',
+
+    // The usual access callback
+    'access callback' => 'admin_entity_access_callback',
+
+    // This is a uri function (see Entity contrib module)
+    'uri callback' => 'entity_class_uri',
+
+    // The information below is used to extend the EntityDefaultUIController
+    'admin ui' => array(
+      'path' => 'admin/content/admin-entity',
+      'controller class' => 'EntityDefaultUIController',
+      'file' => 'inc/adminentity.admin.inc',
+    ),
+  );
+
+  // Configure the admin entity
+  $info['uber_entity'] = array(
+    // label for entity
+    'label' => t('Uber Entity'),
+
+    // Table name (as per .install)
+    'base table' => 'uber_entity',
+
+    // Setup the keys
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'name', // Drupal will auto-render the label now
+    ),
+
+    // Some controllers
+    'entity class' => 'UberEntity',
+    'controller class' => 'UberEntityController',
+
+    // The current modules name
+    'module' => 'custom_entity',
+
+    // The usual access callback
+    'access callback' => 'uber_entity_access_callback',
+
+    // This is a uri function (see Entity contrib module)
+    'uri callback' => 'entity_class_uri',
+
+    // The information below is used to extend the EntityDefaultUIController
+    'admin ui' => array(
+      'path' => 'admin/structure/uber-entity',
+      'controller class' => 'EntityDefaultUIController',
+      'menu wildcard' => '%uber-entity',
+      'file' => 'inc/uberentity.admin.inc',
+    ),
+
+    // Make this entity fieldable
+    'fieldable' => TRUE,
+    'bundles' => array(
+      'uber_entity' => array(
+        'label' => t('Uber Entity'),
+        'admin' => array(
+          'path' => 'admin/structure/uber-entity',
+          'access arguments' => array('administer uber_entity'),
+        ),
+      ),
+    ),
+
+    // Integrate this entity better with views
+    'views controller class' => 'EntityDefaultViewsController',
+
+    // Integrate this entity better with features
+    'features controller class' => 'EntityDefaultFeaturesController',
+  );
+
+  return $info;
+}
+
+
+/**
+* Implemention of hook_permissions()
+*/
+function custom_entity_permission() {
+  return array(
+    'administer admin_entity' => array(
+      'title' => t('Administer Admin Entities'),
+    ),
+    'view admin_entity' => array(
+      'title' => t('View Admin Entities'),
+    ),
+    'administer uber_entity' => array(
+      'title' => t('Administer Uber Entities'),
+    ),
+    'view uber_entity' => array(
+      'title' => t('View Uber Entities'),
+    ),
+  );
+}
+
+
+// Basic ENTITY ONLY FUNCTIONS
+/**
+* Callback function to view the basic entity
+*/
+function _basic_entity_page() {
+  $projects = entity_load('basic_entity', array(1, 2, 3));
+
+  $list = entity_view('basic_entity', $projects);
+
+  $output = array();
+
+  foreach ($list['basic_entity'] as $project) {
+    $output[] = drupal_render($project);
+  }
+
+  return implode($output);
+}
+
+
+/**
+* Extending the EntityAPIController for the basic entity.
+*/
+class BasicEntityController extends EntityAPIController {
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+
+    $build['description'] = array(
+      '#type' => 'markup',
+      '#markup' => check_plain($entity->description),
+      '#prefix' => '<div class="project-description">',
+      '#suffix' => '</div>',
+    );
+
+    return $build;
+
+  }
+}
+
+
+// ADMIN ENTITY ONLY FUNCTIONS
+/**
+* Callback function to view the admin entity
+*/
+function _admin_entity_page() {
+  $projects = entity_load('admin_entity', array(1, 2, 3));
+
+  $list = entity_view('admin_entity', $projects);
+
+  $output = array();
+
+  foreach ($list['admin_entity'] as $project) {
+    $output[] = drupal_render($project);
+  }
+
+  return implode($output);
+}
+
+
+/**
+* Extending the EntityAPIController for the admin entity.
+*/
+class AdminEntityController extends EntityAPIController {
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+
+    $build['description'] = array(
+      '#type' => 'markup',
+      '#markup' => check_plain($entity->description),
+      '#prefix' => '<div class="project-description">',
+      '#suffix' => '</div>',
+    );
+
+    return $build;
+
+  }
+}
+
+
+/**
+* Admin entity class extending the Entity class
+*/
+class AdminEntity extends Entity {
+
+  /**
+  * Change the default URI from default/id to project/id
+  */
+  protected function defaultUri() {
+    return array('path' => 'admin-entity/' . $this->identifier());
+  }
+
+}
+
+
+/**
+* Check access permissions for admin entities.
+*/
+function admin_entity_access_callback($op, $videoentity = NULL, $account = NULL) {
+  if (($op == 'view' && user_access('view admin_entity', $account)) || user_access('administer admin_entity', $account)) {
+    return TRUE;
+  }
+  else if (user_access('administer admin_entity', $account)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+
+// UBER ENTITY ONLY FUNCTIONS
+/**
+* Callback function to view the uber entity
+*/
+function _uber_entity_page() {
+  $projects = entity_load('uber_entity', array(1, 2, 3));
+
+  $list = entity_view('uber_entity', $projects);
+
+  $output = array();
+
+  foreach ($list['uber_entity'] as $project) {
+    $output[] = drupal_render($project);
+  }
+
+  return implode($output);
+}
+
+
+/**
+* Extending the EntityAPIController for the uber entity.
+*/
+class UberEntityController extends EntityAPIController {
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+
+    $build['description'] = array(
+      '#type' => 'markup',
+      '#markup' => check_plain($entity->description),
+      '#prefix' => '<div class="project-description">',
+      '#suffix' => '</div>',
+    );
+
+    return $build;
+
+  }
+}
+
+
+/**
+* Admin entity class extending the Entity class
+*/
+class UberEntity extends Entity {
+
+  /**
+  * Change the default URI from default/id to project/id
+  */
+  protected function defaultUri() {
+    return array('path' => 'uber-entity/' . $this->identifier());
+  }
+
+}
+
+
+/**
+* Check access permissions for admin entities.
+*/
+function uber_entity_access_callback($op, $videoentity = NULL, $account = NULL) {
+  if (($op == 'view' && user_access('view uber_entity', $account)) || user_access('administer uber_entity', $account)) {
+    return TRUE;
+  }
+  else if (user_access('administer uber_entity', $account)) {
+    return TRUE;
+  }
+  return FALSE;
+}

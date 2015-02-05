@@ -1,0 +1,7 @@
+name = Custom entity
+description = A set of custom entities with varying degrees of functionality
+package = Custom
+core = 7.x
+
+; Files
+dependency[] = entity_api
